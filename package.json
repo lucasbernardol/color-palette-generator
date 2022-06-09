@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "husky:install": "husky install"
+    "husky:install": "husky install",
+    "sass:watch": "sass -s compressed -w ./src/styles/main.scss ./build/styles/main.css"
   },
   "repository": {
     "type": "git",
