@@ -1,0 +1,22 @@
+:root {
+  --color-background: #121214;
+  --color-dark: #202024;
+
+  --color-primary: #7159c1;
+  --color-text: #f0f0f5;
+
+  // 62.5% - 10px
+  font-size: 62.5%;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    font-size: 56.25%; // 9px
+  }
+}
+
+@media (max-width: 980px) {
+  :root {
+    font-size: 50%; // 8px
+  }
+}

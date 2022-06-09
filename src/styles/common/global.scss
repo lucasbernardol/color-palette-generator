@@ -1,0 +1,27 @@
+* {
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+
+  font-family: sans-serif;
+  font-size: 1.6rem;
+
+  border: none;
+  outline: none;
+}
+
+button,
+a {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+body {
+  background-color: var(--color-background);
+}
