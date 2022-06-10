@@ -5,7 +5,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="./build/styles/main.css" />
+
+    <script defer src="./src/scripts/main.js"></script>
 
     <title>Color Generator</title>
   </head>
@@ -15,44 +28,113 @@
         <main class="main_container">
           <h1 class="title">Pateta de cores aleatórias</h1>
 
-          <div class="color_wrapper">
+          <div class="color_wrapper" data-id="color-wrapper">
             <div class="colorize_container">
-              <header class="colorize__header"></header>
-              <span class="colorize__color">#7159C1</span>
+              <header class="colorize__header">
+                <div class="header__overlay">
+                  <img
+                    src="./src/assets/images/copy-48.svg"
+                    class="icon-32"
+                    alt="Copy icon"
+                  />
+                </div>
+              </header>
+
+              <div class="colorize__content">
+                <span class="colorize__hex">#7159C1</span>
+                <span class="colorize__rgb">rgb(120, 50, 113)</span>
+              </div>
             </div>
 
             <div class="colorize_container">
-              <header class="colorize__header"></header>
-              <span class="colorize__color">#7159C1</span>
+              <header class="colorize__header">
+                <div class="header__overlay">
+                  <img
+                    src="./src/assets/images/copy-48.svg"
+                    class="icon-32"
+                    alt="Copy icon"
+                  />
+                </div>
+              </header>
+
+              <div class="colorize__content">
+                <span class="colorize__hex">#7159C1</span>
+                <span class="colorize__rgb">rgb(120, 50, 113)</span>
+              </div>
             </div>
 
             <div class="colorize_container">
-              <header class="colorize__header"></header>
-              <span class="colorize__color">#7159C1</span>
+              <header class="colorize__header">
+                <div class="header__overlay">
+                  <img
+                    src="./src/assets/images/copy-48.svg"
+                    class="icon-32"
+                    alt="Copy icon"
+                  />
+                </div>
+              </header>
+
+              <div class="colorize__content">
+                <span class="colorize__hex">#7159C1</span>
+                <span class="colorize__rgb">rgb(120, 50, 113)</span>
+              </div>
             </div>
 
             <div class="colorize_container">
-              <header class="colorize__header"></header>
-              <span class="colorize__color">#7159C1</span>
+              <header class="colorize__header">
+                <div class="header__overlay">
+                  <img
+                    src="./src/assets/images/copy-48.svg"
+                    class="icon-32"
+                    alt="Copy icon"
+                  />
+                </div>
+              </header>
+
+              <div class="colorize__content">
+                <span class="colorize__hex">#7159C1</span>
+                <span class="colorize__rgb">rgb(120, 50, 113)</span>
+              </div>
             </div>
 
             <div class="colorize_container">
-              <header class="colorize__header"></header>
-              <span class="colorize__color">#7159C1</span>
+              <header class="colorize__header">
+                <div class="header__overlay">
+                  <img
+                    src="./src/assets/images/copy-48.svg"
+                    class="icon-32"
+                    alt="Copy icon"
+                  />
+                </div>
+              </header>
+
+              <div class="colorize__content">
+                <span class="colorize__hex">#7159C1</span>
+                <span class="colorize__rgb">rgb(120, 50, 113)</span>
+              </div>
             </div>
           </div>
 
-          <div class="actions_container">
-            <button class="color_generate_button">Gerar novas cores</button>
+          <div class="procedures_container">
+            <button class="color_generate_button">
+              <img
+                src="./src/assets/images/refresh-48.svg"
+                class="icon-28"
+                alt=""
+              />
+              <span>Gerar novas cores</span>
+            </button>
 
-            <span class="action__instructions">
-              Ou pressione a "barra de espaço" para gerar novas cores/paletas.
+            <span class="procedures__instructions">
+              Ou pressione a "barra de espaço/spacebar" para gerar novas
+              cores/paletas.
             </span>
           </div>
 
           <div class="copy_intructions">
             <span class="copy__text">
-              Você pode copiar clicando no "card" escolhido
+              Você pode copiar uma cor especifíca clicando no "cartão"
+              dispovível.
             </span>
           </div>
         </main>
