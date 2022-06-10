@@ -116,11 +116,15 @@
           </div>
 
           <div class="procedures_container">
-            <button class="color_generate_button">
+            <button
+              class="color_generate_button"
+              type="button"
+              data-id="button-generate"
+            >
               <img
                 src="./src/assets/images/refresh-48.svg"
                 class="icon-28"
-                alt=""
+                alt="Refresh svg icon"
               />
               <span>Gerar novas cores</span>
             </button>
@@ -138,6 +142,13 @@
             </span>
           </div>
         </main>
+      </div>
+
+      <div class="clipboard_overlay hidden" data-id="clipboard-modal">
+        <p class="clipboard_message">
+          Copia realizada com sucesso, cor:
+          <span class="clipboard_color">#7159c1</span>
+        </p>
       </div>
     </div>
   </body>
