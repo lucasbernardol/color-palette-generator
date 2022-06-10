@@ -6,7 +6,7 @@
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
 
-  font-family: sans-serif;
+  font-family: 'Roboto', sans-serif;
   font-size: 1.6rem;
 
   color: var(--color-text);
@@ -26,4 +26,24 @@ a {
 
 body {
   background-color: var(--color-background);
+}
+
+img {
+  pointer-events: none;
+
+  user-select: none;
+  -ms-user-select: none;
+  -moz-user-focus: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+}
+
+.icon-32 {
+  width: 3.2rem;
+  height: 3.2rem;
+}
+
+.icon-28 {
+  width: 2.8rem;
+  height: 2.8rem;
 }

@@ -1,24 +1,24 @@
 .color_wrapper {
   width: 100%;
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  flex-wrap: wrap;
-
   padding: 0 1.6rem;
+
+  display: flex;
+  justify-content: center;
+
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .colorize_container {
+  // flex-basis: 180px
   flex: 150px 1 1;
-
   display: flex;
+
   flex-direction: column;
   align-items: center;
 
   margin: 1rem;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
 
   background-color: var(--color-dark);
   border-radius: 0.5rem;
@@ -27,26 +27,108 @@
   box-shadow: 5px 5px 10px -10px rgba(0, 0, 0, 0.5);
 
   cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1);
+    cursor: copy;
+  }
+
+  &:hover .header__overlay {
+    bottom: 0;
+    opacity: 1;
+
+    height: 100%;
+  }
+
+  &:active .header__overlay {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .colorize__header {
+    pointer-events: none;
+
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+    height: 180px;
+
+    background-color: var(--color-primary);
+    border-radius: 0.5rem;
+  }
+
+  .header__overlay {
+    pointer-events: none;
+
+    position: absolute;
+    left: 0;
+
+    width: 100%;
+    height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity: 0;
+  }
 }
 
-.colorize_container:hover {
-  transform: translateY(-5%);
-  opacity: 0.8;
-}
-
-.colorize__header {
+.colorize__content {
   width: 100%;
-  height: 180px;
 
-  background-color: var(--color-primary);
-  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-weight: bold;
+    text-align: center;
+  }
+
+  span:last-child {
+    border-top: 1px solid #202024;
+    padding-top: 1rem;
+  }
+
+  .colorize__hex {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .colorize__hex,
+  .colorize__rgb {
+    pointer-events: none;
+    text-align: center;
+  }
+
+  .colorize__hex {
+    font-family: 'Inter', sans-serif;
+    font-size: 2rem;
+
+    line-height: 1.2;
+    margin-top: 1.2rem;
+  }
+
+  .colorize__rgb {
+    font-size: 1.4rem;
+    text-transform: uppercase;
+
+    color: #b1b1b1;
+    margin-top: 0.5rem;
+  }
 }
 
-.colorize__color {
-  font-size: 2rem;
-  line-height: 1.5;
-
-  font-weight: bold;
-
-  margin-top: 1.2rem;
+@media (max-width: 680px) {
+  .colorize_container:hover {
+    transform: none;
+  }
 }
