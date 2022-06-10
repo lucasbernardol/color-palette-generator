@@ -30,7 +30,8 @@
 
   &:hover {
     transform: scale(1.1);
-    cursor: copy;
+
+    cursor: pointer;
   }
 
   &:hover .header__overlay {
@@ -41,7 +42,7 @@
   }
 
   &:active .header__overlay {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.2);
   }
 
   .colorize__header {
@@ -55,6 +56,8 @@
 
     background-color: var(--color-primary);
     border-radius: 0.5rem;
+
+    transition: 0.8s cubic-bezier(0.47, 0, 0.745, 0.715);
   }
 
   .header__overlay {
@@ -80,6 +83,7 @@
 }
 
 .colorize__content {
+  pointer-events: none;
   width: 100%;
 
   display: flex;
