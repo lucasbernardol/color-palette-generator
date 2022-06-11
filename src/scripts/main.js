@@ -1,5 +1,5 @@
 const DOMColorContainer = document.querySelector('[data-id="color-wrapper"]');
-const DOMCardElements = document.querySelectorAll('.colorize_container');
+const DOMCardElements = document.querySelectorAll(".colorize_container");
 
 const DOMGenerate = document.querySelector('[data-id="button-generate"]');
 
@@ -35,7 +35,7 @@ async function clipBoardText(text) {
   let copied = true;
 
   try {
-    const isString = text && typeof text === 'string';
+    const isString = text && typeof text === "string";
 
     const isInvalidString = !isString;
 
@@ -60,7 +60,7 @@ async function clipBoardText(text) {
 
 // class "Color"
 class Color {
-  _rgb_string_divider = ',';
+  _rgb_string_divider = ",";
 
   constructor() {}
 
@@ -101,7 +101,7 @@ class Color {
       return decimalToHex;
     });
 
-    const hexString = colors.join('');
+    const hexString = colors.join("");
 
     return hexString;
   }
@@ -131,7 +131,7 @@ class Color {
   }
 }
 
-// class:  "ModalNotifier"
+// class: "ModalNotifier"
 class ModalNotifier {
   _class_name = null;
 
@@ -181,13 +181,13 @@ class ModalNotifier {
    *  commonClassName: string,
    * }}
    */
-  constructor({ overlays, commonClassName = 'hidden' }) {
+  constructor({ overlays, commonClassName = "hidden" }) {
     this.overlays = overlays;
     this._class_name = commonClassName;
   }
 
-  _findModalContainerByKey(keyOrPrefix = '') {
-    const isKey = keyOrPrefix && typeof keyOrPrefix === 'string';
+  _findModalContainerByKey(keyOrPrefix = "") {
+    const isKey = keyOrPrefix && typeof keyOrPrefix === "string";
 
     if (!isKey) {
       throw new Error(`Invalid Modal key: "${keyOrPrefix}"`);
@@ -256,11 +256,12 @@ class ModalNotifier {
   searchHTMLOnContainerAndSetTextContent() {}
 }
 
-class DOMOperations {
+// class "View"
+class View {
   _elements_class_names = {
-    header: '.colorize__header',
-    spanHexColor: '.colorize__hex',
-    spanRGBColor: '.colorize__rgb',
+    header: ".colorize__header",
+    spanHexColor: ".colorize__hex",
+    spanRGBColor: ".colorize__rgb",
   };
 
   _show_copied_notifier = null;
@@ -302,6 +303,8 @@ class DOMOperations {
     this.colorInstance = colorInstance;
     this.notifierInstance = notifierInstance;
     this.showCopyNotifier = showCopyNotifier;
+
+    this.init();
   }
 
   init() {
@@ -373,7 +376,7 @@ class DOMOperations {
     for (let childElement of childs) {
       const eventRef = (event) => this.copyColorToClipboard(event);
 
-      childElement.addEventListener('click', eventRef);
+      childElement.addEventListener("click", eventRef);
     }
   }
 
@@ -399,72 +402,69 @@ class DOMOperations {
     const isOkToDisplayClipboard = isCopied && this.showCopyNotifier;
 
     if (isOkToDisplayClipboard) {
-      this.notifierInstance.open('clipboard').automaticClosing('clipboard');
+      this.notifierInstance.open("clipboard").automaticClosing("clipboard");
     }
   }
 }
 
-/**
- * Init
- */
+function shortcutActionByKey(keyCode) {
+  let keyBoardShortcutAction = null;
+
+  switch (keyCode) {
+    case 110:
+      // Key "n"
+      keyBoardShortcutAction = "TOGGLE_COPY_NOTIFIER";
+      break;
+
+    case 32:
+    case 114:
+      // Key "R" or SPACEBAR
+      keyBoardShortcutAction = "RELOAD_PALETTE";
+      break;
+  }
+
+  return keyBoardShortcutAction;
+}
+
 function application() {
   const notifier = new ModalNotifier({
     overlays: [
-      { container: DOMClipboardModal, key: 'clipboard' },
-      { container: DOMShortcutsModal, key: 'shortcut' },
+      { container: DOMClipboardModal, key: "clipboard" },
+      { container: DOMShortcutsModal, key: "shortcut" },
     ],
   });
 
-  const dom = new DOMOperations({
+  const view = new View({
     container: DOMColorContainer,
     childsElements: DOMCardElements,
     notifierInstance: notifier,
     showCopyNotifier: true,
   });
 
-  dom.init();
-
   /**
    * DOM Events
    */
-  DOMGenerate.addEventListener('click', () => dom.reloadDisplayedColors());
+  DOMGenerate.addEventListener("click", () => view.reloadDisplayedColors());
 
   /**
    * Shortcuts HTML Events
    */
-  DOMShortcutOpen.addEventListener('click', () => notifier.open('shortcut'));
-  DOMShortcutClose.addEventListener('click', () => notifier.close('shortcut'));
+  DOMShortcutOpen.addEventListener("click", () => notifier.open("shortcut"));
+  DOMShortcutClose.addEventListener("click", () => notifier.close("shortcut"));
 
-  /**
-   * Shortcuts Events/handle
-   */
-  window.addEventListener('keypress', (keyEvent) => {
-    console.log(keyEvent);
+  window.addEventListener("keypress", ({ which: keyCode }) => {
+    const action = shortcutActionByKey(keyCode);
 
-    const { which: eventKeyCode } = keyEvent;
+    if (action === "RELOAD_PALETTE") {
+      view.reloadDisplayedColors();
+    }
 
-    switch (eventKeyCode) {
-      case 110:
-        // Key "N"
-        const notifierState = !dom.showCopyNotifier;
+    if (action === "TOGGLE_COPY_NOTIFIER") {
+      DOMShortcutCircle.classList.toggle("disabled");
 
-        DOMShortcutCircle.classList.toggle('disabled');
-
-        dom.showCopyNotifier = notifierState;
-
-        break;
-
-      case 32:
-      case 114:
-        // Key "R"
-        // SpaceBar
-        dom.reloadDisplayedColors();
-
-        break;
+      view.showCopyNotifier = !view.showCopyNotifier;
     }
   });
 }
 
-const init = () => application();
-
-window.addEventListener('load', () => init());
+window.addEventListener("load", () => application());
