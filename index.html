@@ -144,11 +144,75 @@
         </main>
       </div>
 
+      <!-- Clipboard tooltip/alert -->
       <div class="clipboard_overlay hidden" data-id="clipboard-modal">
         <p class="clipboard_message">
           Copia realizada com sucesso, cor:
           <span class="clipboard_color">#7159c1</span>
         </p>
+      </div>
+
+      <!--Shorcuts details -->
+      <button
+        type="button"
+        class="shortcut-open-button"
+        data-id="shortcut-open"
+      >
+        <img
+          src="./src/assets/images/expand-48.svg"
+          alt="Expand icon"
+          class="expand-icon"
+        />
+      </button>
+
+      <div class="shortcuts_overlay hidden" data-id="shortcuts-modal">
+        <section class="shortcuts">
+          <h2 class="shortcuts__title">
+            <img src="./src/assets/images/keyboard-48.svg" alt="Keyboard" />
+
+            <span>Shortcuts disponíveis</span>
+          </h2>
+
+          <div class="shorts">
+            <ul class="shorts__list">
+              <li class="shorts_item">
+                <span class="shortcut__description">
+                  Gerar ou alterar a patela de cores atual
+                </span>
+
+                <span class="shortcut__key">r or spacebar</span>
+              </li>
+
+              <li class="shorts_item">
+                <span class="shortcut__description">
+                  Exportar cores em um arquivo JSON
+                  <mark class="shortcut_development">Em desenvolvimento</mark>
+                </span>
+
+                <span class="shortcut__key">e</span>
+              </li>
+
+              <li class="shorts_item">
+                <span class="shortcut__description">
+                  Desabilidar notificações ou alertas de copias
+                </span>
+
+                <span class="shortcut__key">
+                  n
+                  <div class="key__circle" data-id="shortcut-circle"></div>
+                </span>
+              </li>
+            </ul>
+
+            <button
+              type="button"
+              class="shortcut__closing"
+              data-id="shortcut-close"
+            >
+              Sair
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   </body>
