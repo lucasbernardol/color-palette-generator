@@ -1,18 +1,34 @@
 const DOMColorContainer = document.querySelector('[data-id="color-wrapper"]');
 const DOMCardElements = document.querySelectorAll('.colorize_container');
 
-const DOMGenerateButtom = document.querySelector('[data-id="button-generate"]');
+const DOMGenerate = document.querySelector('[data-id="button-generate"]');
 
-const DOMClipboardContainer = document.querySelector(
-  '[data-id="clipboard-modal"]'
-);
+/**
+ * Clipboard
+ */
+const DOMClipboardModal = document.querySelector('[data-id="clipboard-modal"]');
 
-const RANDOM_NUMBER = (from, to) => {
+/**
+ * Shortcuts
+ */
+const DOMShortcutsModal = document.querySelector('[data-id="shortcuts-modal"]');
+
+const DOMShortcutOpen = document.querySelector('[data-id="shortcut-open"]');
+const DOMShortcutClose = document.querySelector('[data-id="shortcut-close"]');
+
+const DOMShortcutCircle = document.querySelector('[data-id="shortcut-circle"]');
+
+/**
+ * Utils
+ */
+function randomNumber(from, to) {
   return Math.floor(Math.random() * (to - from) + 1);
-};
+}
 
 function secondsToMilliseconds(seconds = 0) {
-  return Math.floor(seconds * 1000);
+  const calcutate = Number(seconds) * 1000;
+
+  return Math.floor(calcutate);
 }
 
 async function clipBoardText(text) {
@@ -42,6 +58,7 @@ async function clipBoardText(text) {
   }
 }
 
+// class "Color"
 class Color {
   _rgb_string_divider = ',';
 
@@ -54,7 +71,7 @@ class Color {
     let interactionsIndex = 0;
 
     while (interactionsIndex < colorParts.length) {
-      colorParts[interactionsIndex] = RANDOM_NUMBER(1, 255);
+      colorParts[interactionsIndex] = randomNumber(1, 255);
 
       interactionsIndex++;
     }
@@ -114,25 +131,32 @@ class Color {
   }
 }
 
-// HTML ClipBoard Modal
-class ClipBoardModal {
-  _class_name = 'hidden';
+// class:  "ModalNotifier"
+class ModalNotifier {
+  _class_name = null;
+
   _handle_timeout_value = null;
+  _last_prefix = null;
 
   _clearTimeoutHandle() {
-    clearTimeout(this._handle_timeout_value);
+    if (this._handle_timeout_value) {
+      clearTimeout(this._handle_timeout_value);
 
-    this._handle_timeout_value = null;
+      this._handle_timeout_value = null;
+    }
   }
 
   _setTimeoutHandle(handle) {
     this._handle_timeout_value = handle;
   }
 
+  _setLastPrefix(prefix) {
+    this._last_prefix = prefix;
+  }
+
   /**
    * @param {HTMLElement} element
    * @param {String} className
-   *
    */
   _containsClassName(element, className) {
     const classCSS = className || this._class_name;
@@ -150,69 +174,82 @@ class ClipBoardModal {
 
   /**
    * @param options {{
-   *  clipboardContainer: HTMLElement
+   *  overlays: [{
+   *    container: HTMLElement,
+   *    key: string,
+   *  }],
+   *  commonClassName: string,
    * }}
    */
-  constructor({ clipboardContainer }) {
-    this.container = clipboardContainer;
+  constructor({ overlays, commonClassName = 'hidden' }) {
+    this.overlays = overlays;
+    this._class_name = commonClassName;
   }
 
-  clearTimeout() {
-    if (this._handle_timeout_value) {
-      this._clearTimeoutHandle();
+  _findModalContainerByKey(keyOrPrefix = '') {
+    const isKey = keyOrPrefix && typeof keyOrPrefix === 'string';
+
+    if (!isKey) {
+      throw new Error(`Invalid Modal key: "${keyOrPrefix}"`);
     }
+
+    const { container } = this.overlays.find(
+      ({ key }) => key === keyOrPrefix.trim()
+    );
+
+    return container;
   }
 
-  setTimeout(handle) {
-    this._setTimeoutHandle(handle);
-  }
+  open(keyElement) {
+    // Set Prefixs
+    this._setLastPrefix(keyElement);
+    this._clearTimeoutHandle();
 
-  open() {
-    this.clearTimeout();
+    const containerHtmlElement = this._findModalContainerByKey(keyElement);
 
-    const container = this.container;
+    const isClosedOverlay = this._containsClassName(containerHtmlElement);
 
-    const isClosed = this._containsClassName(container);
+    if (isClosedOverlay) {
+      // Remove "hidden" className.
+      this._removeClassName(containerHtmlElement);
 
-    if (isClosed) {
-      this._removeClassName(container);
+      this._setLastPrefix(keyElement);
     }
 
     return this;
   }
 
-  close() {
-    this.clearTimeout();
+  close(keyElement = this._last_prefix) {
+    this._clearTimeoutHandle();
 
-    const container = this.container;
+    const containerHtmlElement = this._findModalContainerByKey(keyElement);
 
-    const isOpened = !this._containsClassName(container);
+    const isOpened = !this._containsClassName(containerHtmlElement);
 
-    console.log({ isOpened });
-
+    // Add "hidden" className.
     if (isOpened) {
-      this._setClassName(container);
+      this._setClassName(containerHtmlElement);
     }
   }
 
-  automaticClosing(timeInSeconds = 2) {
-    const milliseconds = secondsToMilliseconds(timeInSeconds);
+  automaticClosing(key, timeInSeconds = 2) {
+    let milliseconds = secondsToMilliseconds(timeInSeconds);
 
-    const container = this.container;
+    const containerHtmlModalElement = this._findModalContainerByKey(key);
 
-    const isOpened = !this._containsClassName(container);
-
-    console.debug({
-      isOpened,
-    });
+    const isOpenedModalOverlay = !this._containsClassName(
+      containerHtmlModalElement
+    );
 
     // CallbackFunction
-    const timeoutHandleCallBackFn = () => this.close();
+    const timeoutHandleCallBackFn = () => {
+      this.close(key);
+    };
 
-    if (isOpened) {
+    if (isOpenedModalOverlay) {
       const handle = setTimeout(timeoutHandleCallBackFn, milliseconds);
 
-      this.setTimeout(handle);
+      this._setTimeoutHandle(handle);
     }
   }
 
@@ -226,21 +263,45 @@ class DOMOperations {
     spanRGBColor: '.colorize__rgb',
   };
 
+  _show_copied_notifier = null;
+
+  /**
+   * @param {Boolean} boo - "boolean"
+   */
+  set showCopyNotifier(boo) {
+    this._show_copied_notifier = boo;
+  }
+
+  get showCopyNotifier() {
+    return this._show_copied_notifier;
+  }
+
   /**
    * @param options {{
    *  container: HTMLElement,
    *  childsElements: HTMLElement[],
    *  colorInstance: Color,
+   *  notifierInstance: ModalNotifier,
+   *  showCopyNotifier?: boolean
    * }}
    */
-  constructor({ container, childsElements, colorInstance = new Color() }) {
+  constructor({
+    container,
+    childsElements,
+    colorInstance = new Color(),
+    notifierInstance,
+    showCopyNotifier = true,
+  }) {
     this.container = container;
 
     // "Array Like" to Array
     const childs = Array.from(childsElements);
 
     this.childsArray = childs;
+
     this.colorInstance = colorInstance;
+    this.notifierInstance = notifierInstance;
+    this.showCopyNotifier = showCopyNotifier;
   }
 
   init() {
@@ -327,25 +388,83 @@ class DOMOperations {
       this._elements_class_names.spanHexColor
     );
 
-    //focus
+    // focus
     spanHex.focus();
 
     const hexColorToCopy = this.getColorHexCodeFromDisplay(spanHex);
 
-    const result = await clipBoardText(hexColorToCopy);
+    const isCopied = await clipBoardText(hexColorToCopy);
 
-    if (result)
-      new ClipBoardModal({ clipboardContainer: DOMClipboardContainer })
-        .open()
-        .automaticClosing();
+    // Boolean
+    const isOkToDisplayClipboard = isCopied && this.showCopyNotifier;
+
+    if (isOkToDisplayClipboard) {
+      this.notifierInstance.open('clipboard').automaticClosing('clipboard');
+    }
   }
 }
 
-const dom = new DOMOperations({
-  container: DOMColorContainer,
-  childsElements: DOMCardElements,
-});
+/**
+ * Init
+ */
+function application() {
+  const notifier = new ModalNotifier({
+    overlays: [
+      { container: DOMClipboardModal, key: 'clipboard' },
+      { container: DOMShortcutsModal, key: 'shortcut' },
+    ],
+  });
 
-dom.init();
+  const dom = new DOMOperations({
+    container: DOMColorContainer,
+    childsElements: DOMCardElements,
+    notifierInstance: notifier,
+    showCopyNotifier: true,
+  });
 
-DOMGenerateButtom.addEventListener('click', () => dom.reloadDisplayedColors());
+  dom.init();
+
+  /**
+   * DOM Events
+   */
+  DOMGenerate.addEventListener('click', () => dom.reloadDisplayedColors());
+
+  /**
+   * Shortcuts HTML Events
+   */
+  DOMShortcutOpen.addEventListener('click', () => notifier.open('shortcut'));
+  DOMShortcutClose.addEventListener('click', () => notifier.close('shortcut'));
+
+  /**
+   * Shortcuts Events/handle
+   */
+  window.addEventListener('keypress', (keyEvent) => {
+    console.log(keyEvent);
+
+    const { which: eventKeyCode } = keyEvent;
+
+    switch (eventKeyCode) {
+      case 110:
+        // Key "N"
+        const notifierState = !dom.showCopyNotifier;
+
+        DOMShortcutCircle.classList.toggle('disabled');
+
+        dom.showCopyNotifier = notifierState;
+
+        break;
+
+      case 32:
+      case 114:
+        // Key "R"
+        // SpaceBar
+        dom.reloadDisplayedColors();
+
+        break;
+    }
+  });
+}
+
+const init = () => application();
+
+window.addEventListener('load', () => init());
