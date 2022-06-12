@@ -1,5 +1,5 @@
 const DOMColorContainer = document.querySelector('[data-id="color-wrapper"]');
-const DOMCardElements = document.querySelectorAll(".colorize_container");
+const DOMCardElements = document.querySelectorAll('.colorize_container');
 
 const DOMGenerate = document.querySelector('[data-id="button-generate"]');
 
@@ -19,6 +19,17 @@ const DOMShortcutClose = document.querySelector('[data-id="shortcut-close"]');
 const DOMShortcutCircle = document.querySelector('[data-id="shortcut-circle"]');
 
 /**
+ * Dawnload
+ */
+const DOMDownloadAnchor = document.querySelector('[data-id="download-anchor"]');
+
+const GLOBAL_CLASS_NAMES = {
+  clipboardColorText: '.clipboard__color',
+};
+
+const LAST_COLORS = null;
+
+/**
  * Utils
  */
 function randomNumber(from, to) {
@@ -31,11 +42,11 @@ function secondsToMilliseconds(seconds = 0) {
   return Math.floor(calcutate);
 }
 
-async function clipBoardText(text) {
+async function sendTextToClipboard(text) {
   let copied = true;
 
   try {
-    const isString = text && typeof text === "string";
+    const isString = text && typeof text === 'string';
 
     const isInvalidString = !isString;
 
@@ -60,7 +71,11 @@ async function clipBoardText(text) {
 
 // class "Color"
 class Color {
-  _rgb_string_divider = ",";
+  _rgb_string_divider = ',';
+
+  _percentToDecimal(percent) {
+    return Math.floor(percent / 100);
+  }
 
   constructor() {}
 
@@ -101,7 +116,7 @@ class Color {
       return decimalToHex;
     });
 
-    const hexString = colors.join("");
+    const hexString = colors.join('');
 
     return hexString;
   }
@@ -129,39 +144,35 @@ class Color {
 
     return `rgb(${string})`;
   }
+
+  rgbToRgba(rgbArray = [], opacityPercent = 100) {
+    const opacity = this._percentToDecimal(opacityPercent);
+
+    // Example: [113, 86, 250, 1.0]
+    return [...rgbArray, opacity];
+  }
+
+  rgbaToCssString(rgba = []) {
+    return this.rgbToCssString(rgba);
+  }
 }
 
 // class: "ModalNotifier"
 class ModalNotifier {
   _class_name = null;
 
-  _handle_timeout_value = null;
-  _last_prefix = null;
-
-  _clearTimeoutHandle() {
-    if (this._handle_timeout_value) {
-      clearTimeout(this._handle_timeout_value);
-
-      this._handle_timeout_value = null;
+  _clearTimeoutHandle(timeoutHandleValue) {
+    if (timeoutHandleValue) {
+      clearTimeout(timeoutHandleValue);
     }
-  }
-
-  _setTimeoutHandle(handle) {
-    this._handle_timeout_value = handle;
-  }
-
-  _setLastPrefix(prefix) {
-    this._last_prefix = prefix;
   }
 
   /**
    * @param {HTMLElement} element
    * @param {String} className
    */
-  _containsClassName(element, className) {
-    const classCSS = className || this._class_name;
-
-    return element.classList.contains(classCSS);
+  _containsClassName(element, className = this._class_name) {
+    return element.classList.contains(className);
   }
 
   _removeClassName(element, className = this._class_name) {
@@ -177,94 +188,134 @@ class ModalNotifier {
    *  overlays: [{
    *    container: HTMLElement,
    *    key: string,
+   *    setTimeoutHandleValue: number,
+   *    isOpen: boolean,
    *  }],
    *  commonClassName: string,
    * }}
    */
-  constructor({ overlays, commonClassName = "hidden" }) {
+  constructor({ overlays, commonClassName = 'hidden' }) {
     this.overlays = overlays;
     this._class_name = commonClassName;
   }
 
-  _findModalContainerByKey(keyOrPrefix = "") {
-    const isKey = keyOrPrefix && typeof keyOrPrefix === "string";
+  setPartialOverlayObject(prefix, objectPartial) {
+    const { overlay, overlayIndex } = this.getOverlaObjectByPrefix(prefix);
 
-    if (!isKey) {
-      throw new Error(`Invalid Modal key: "${keyOrPrefix}"`);
-    }
+    const mergedOverlay = { ...overlay, ...objectPartial };
 
-    const { container } = this.overlays.find(
-      ({ key }) => key === keyOrPrefix.trim()
-    );
+    this.overlays[overlayIndex] = mergedOverlay;
 
-    return container;
+    console.log({
+      mergedOverlay,
+      overlays: this.overlays,
+    });
   }
 
-  open(keyElement) {
-    // Set Prefixs
-    this._setLastPrefix(keyElement);
-    this._clearTimeoutHandle();
+  getOverlaObjectByPrefix(prefix = null) {
+    const isNotPrefix = typeof prefix !== 'string';
 
-    const containerHtmlElement = this._findModalContainerByKey(keyElement);
+    if (isNotPrefix) throw new Error(`Modal key ERROR: "${prefix}"`);
 
-    const isClosedOverlay = this._containsClassName(containerHtmlElement);
+    // Callback
+    const findRef = ({ key }) => {
+      return key === prefix;
+    };
+
+    const overlay = this.overlays.find(findRef);
+
+    const overlayIndex = this.overlays.findIndex(findRef);
+
+    return { overlay, overlayIndex };
+  }
+
+  open(prefix) {
+    const { overlay } = this.getOverlaObjectByPrefix(prefix);
+
+    const { container } = overlay;
+
+    const isClosedOverlay = this._containsClassName(container);
 
     if (isClosedOverlay) {
-      // Remove "hidden" className.
-      this._removeClassName(containerHtmlElement);
+      this._removeClassName(container);
 
-      this._setLastPrefix(keyElement);
+      // Update object
+      this.setPartialOverlayObject(prefix, { isOpen: true });
     }
 
     return this;
   }
 
-  close(keyElement = this._last_prefix) {
-    this._clearTimeoutHandle();
+  close(prefix) {
+    const { overlay } = this.getOverlaObjectByPrefix(prefix);
 
-    const containerHtmlElement = this._findModalContainerByKey(keyElement);
+    const { container, setTimeoutHandleValue } = overlay;
 
-    const isOpened = !this._containsClassName(containerHtmlElement);
+    const isOpenedOverlay = !this._containsClassName(container);
 
-    // Add "hidden" className.
-    if (isOpened) {
-      this._setClassName(containerHtmlElement);
+    if (isOpenedOverlay) {
+      // Force "clearInterval"
+      this._clearTimeoutHandle(setTimeoutHandleValue);
+
+      this._setClassName(container);
+
+      this.setPartialOverlayObject(prefix, {
+        setTimeoutHandleValue: null,
+        isOpen: false,
+      });
     }
   }
 
-  automaticClosing(key, timeInSeconds = 2) {
-    let milliseconds = secondsToMilliseconds(timeInSeconds);
+  automaticClosing(prefix, secondsToClosing = 5) {
+    const secondsToMillisecondsClosing =
+      secondsToMilliseconds(secondsToClosing);
 
-    const containerHtmlModalElement = this._findModalContainerByKey(key);
+    const { overlay } = this.getOverlaObjectByPrefix(prefix);
 
-    const isOpenedModalOverlay = !this._containsClassName(
-      containerHtmlModalElement
-    );
+    const { container } = overlay;
 
-    // CallbackFunction
-    const timeoutHandleCallBackFn = () => {
-      this.close(key);
+    const isClosedVerification = !this._containsClassName(container);
+
+    // CallbackFn
+    const closeModalRef = () => {
+      this.close(prefix);
     };
 
-    if (isOpenedModalOverlay) {
-      const handle = setTimeout(timeoutHandleCallBackFn, milliseconds);
+    if (isClosedVerification) {
+      const setTimeoutHandleValue = setTimeout(
+        closeModalRef,
+        secondsToMillisecondsClosing
+      );
 
-      this._setTimeoutHandle(handle);
+      // Save "timeout" handle.
+      this.setPartialOverlayObject(prefix, { setTimeoutHandleValue });
     }
   }
 
-  searchHTMLOnContainerAndSetTextContent() {}
+  searchHtmlInOverlayAndSetTextContent({ prefix, className, textValue } = {}) {
+    const { overlay } = this.getOverlaObjectByPrefix(prefix);
+
+    const { container } = overlay;
+
+    // html Element
+    const htmlElement = container.querySelector(className);
+
+    // Add textContent
+    htmlElement.textContent = textValue;
+  }
 }
 
 // class "View"
 class View {
   _elements_class_names = {
-    header: ".colorize__header",
-    spanHexColor: ".colorize__hex",
-    spanRGBColor: ".colorize__rgb",
+    header: '.colorize__header',
+    spanHexColor: '.colorize__hex',
+    spanRGBColor: '.colorize__rgb',
   };
 
   _show_copied_notifier = null;
+
+  _current_colors = [];
 
   /**
    * @param {Boolean} boo - "boolean"
@@ -275,6 +326,14 @@ class View {
 
   get showCopyNotifier() {
     return this._show_copied_notifier;
+  }
+
+  get currentColors() {
+    return this._current_colors;
+  }
+
+  set currentColors(current = []) {
+    this._current_colors = current;
   }
 
   /**
@@ -318,11 +377,16 @@ class View {
   _colors() {
     const { rgb, rgbCssString } = this.colorInstance.rgb();
 
-    const hexString = this.colorInstance.rgbToHexCssString(rgb);
+    const rgbaArray = this.colorInstance.rgbToRgba(rgb);
+
+    const rgba = this.colorInstance.rgbaToCssString(rgbaArray);
+
+    const hex = this.colorInstance.rgbToHexCssString(rgb);
 
     return {
-      hexString,
-      rgbString: rgbCssString,
+      hex,
+      rgb: rgbCssString,
+      rgba,
     };
   }
 
@@ -330,13 +394,9 @@ class View {
     return Object.assign(element.style, styleObject);
   }
 
-  getColorHexCodeFromDisplay(screenElement) {
-    return screenElement.textContent;
-  }
-
-  setColorOnDisplayedElements({ spanHex, spanRgb, hexString, rgbString }) {
-    spanHex.textContent = hexString;
-    spanRgb.textContent = rgbString;
+  setColorOnDisplayedElements({ spanHex, spanRgb, hex, rgb }) {
+    spanHex.textContent = hex;
+    spanRgb.textContent = rgb;
   }
 
   reloadDisplayedColors() {
@@ -360,14 +420,15 @@ class View {
       });
 
       this._setStyle(headerElement, {
-        backgroundColor: colors.hexString,
+        backgroundColor: colors.hex,
       });
 
       // History
       lastColorList.push(colors);
     }
 
-    //console.log(lastColorList);
+    // Current colors
+    this.currentColors = lastColorList;
   }
 
   setClipboardEvent() {
@@ -376,7 +437,7 @@ class View {
     for (let childElement of childs) {
       const eventRef = (event) => this.copyColorToClipboard(event);
 
-      childElement.addEventListener("click", eventRef);
+      childElement.addEventListener('click', eventRef);
     }
   }
 
@@ -385,25 +446,109 @@ class View {
    * @param event {Event}
    */
   async copyColorToClipboard(event) {
-    const { target } = event;
+    const { target: htmlTargetElement } = event;
 
-    const spanHex = target.querySelector(
-      this._elements_class_names.spanHexColor
-    );
+    const { spanHexColor } = this._elements_class_names;
 
-    // focus
-    spanHex.focus();
+    // "span"
+    const spanElementHex = htmlTargetElement.querySelector(spanHexColor);
+    spanElementHex.focus();
 
-    const hexColorToCopy = this.getColorHexCodeFromDisplay(spanHex);
+    const hexColor = spanElementHex.textContent;
 
-    const isCopied = await clipBoardText(hexColorToCopy);
+    this.notifierInstance.searchHtmlInOverlayAndSetTextContent({
+      prefix: 'clipboard',
+      className: GLOBAL_CLASS_NAMES.clipboardColorText,
+      textValue: hexColor,
+    });
 
-    // Boolean
-    const isOkToDisplayClipboard = isCopied && this.showCopyNotifier;
+    // Clipboard notifier
+    const isCopied = await sendTextToClipboard(hexColor);
 
-    if (isOkToDisplayClipboard) {
-      this.notifierInstance.open("clipboard").automaticClosing("clipboard");
+    const allowShowNotifierComponent = isCopied && this.showCopyNotifier;
+
+    if (allowShowNotifierComponent) {
+      this.notifierInstance.open('clipboard').automaticClosing('clipboard', 5);
     }
+  }
+}
+
+// class "Export"
+class DownloadBlob {
+  _json_type = 'application/json,charset=utf-8';
+
+  /**
+   * @param {{ anchorElement: HTMLAnchorElement }} options
+   */
+  constructor({ anchorElement } = {}) {
+    this.anchorElement = anchorElement;
+  }
+  /**
+   *
+   * @param {{
+   *  data: string,
+   *  type?: string,
+   *  filename: string,
+   *  extension: string,
+   *  clearDownloadURLDalaySeconds: number,
+   *  onDownload: (data: any) => void,
+   * }} options
+   */
+  export(options = {}) {
+    const {
+      data,
+      type = this._json_type,
+      filename,
+      extension,
+      clearDownloadURLDalaySeconds,
+      onDownload,
+    } = options;
+
+    const binaryBlob = new Blob([data], {
+      type,
+    });
+
+    const filenameNormalized = this.fileNameNormalize(filename, extension);
+
+    const url = URL.createObjectURL(binaryBlob);
+
+    // Add attributes
+    this.anchorElement.setAttribute('href', url);
+    this.anchorElement.setAttribute('download', filenameNormalized);
+
+    // Click
+    this.anchorElement.click();
+
+    this.remokeURL(url, clearDownloadURLDalaySeconds);
+
+    // Callback
+    const isFunction = typeof onDownload === 'function';
+
+    if (isFunction) {
+      onDownload({ url, sizeInBytes: binaryBlob.size });
+    }
+  }
+
+  createURL(binaryBlob) {
+    return URL.createObjectURL(binaryBlob);
+  }
+
+  remokeURL(url, seconds) {
+    const remokeCallBackFn = () => URL.revokeObjectURL(url);
+
+    const delayMilliseconds = secondsToMilliseconds(seconds);
+
+    setTimeout(remokeCallBackFn, delayMilliseconds);
+  }
+
+  fileNameNormalize(filename = '', extension) {
+    let filenameNormalized = filename.trim();
+
+    if (!filenameNormalized.includes(extension)) {
+      filenameNormalized += extension;
+    }
+
+    return filenameNormalized;
   }
 }
 
@@ -413,13 +558,18 @@ function shortcutActionByKey(keyCode) {
   switch (keyCode) {
     case 110:
       // Key "n"
-      keyBoardShortcutAction = "TOGGLE_COPY_NOTIFIER";
+      keyBoardShortcutAction = 'TOGGLE_COPY_NOTIFIER';
       break;
 
     case 32:
     case 114:
       // Key "R" or SPACEBAR
-      keyBoardShortcutAction = "RELOAD_PALETTE";
+      keyBoardShortcutAction = 'RELOAD_PALETTE';
+      break;
+
+    case 101:
+      // Key "E"
+      keyBoardShortcutAction = 'EXPORT_COLORS_JSON';
       break;
   }
 
@@ -427,11 +577,26 @@ function shortcutActionByKey(keyCode) {
 }
 
 function application() {
+  const download = new DownloadBlob({
+    anchorElement: DOMDownloadAnchor,
+  });
+
   const notifier = new ModalNotifier({
     overlays: [
-      { container: DOMClipboardModal, key: "clipboard" },
-      { container: DOMShortcutsModal, key: "shortcut" },
+      {
+        container: DOMClipboardModal,
+        key: 'clipboard',
+        setTimeoutHandleValue: null,
+        isOpen: null,
+      },
+      {
+        container: DOMShortcutsModal,
+        key: 'shortcut',
+        setTimeoutHandleValue: null,
+        isOpen: null,
+      },
     ],
+    commonClassName: 'hidden',
   });
 
   const view = new View({
@@ -444,27 +609,59 @@ function application() {
   /**
    * DOM Events
    */
-  DOMGenerate.addEventListener("click", () => view.reloadDisplayedColors());
+  DOMGenerate.addEventListener('click', () => view.reloadDisplayedColors());
 
   /**
    * Shortcuts HTML Events
    */
-  DOMShortcutOpen.addEventListener("click", () => notifier.open("shortcut"));
-  DOMShortcutClose.addEventListener("click", () => notifier.close("shortcut"));
+  DOMShortcutOpen.addEventListener('click', () => notifier.open('shortcut'));
+  DOMShortcutClose.addEventListener('click', () => notifier.close('shortcut'));
 
-  window.addEventListener("keypress", ({ which: keyCode }) => {
+  window.addEventListener('keypress', (event) => {
+    //console.log(event);
+
+    const { which: keyCode } = event;
+
     const action = shortcutActionByKey(keyCode);
 
-    if (action === "RELOAD_PALETTE") {
+    if (action === 'RELOAD_PALETTE') {
       view.reloadDisplayedColors();
     }
 
-    if (action === "TOGGLE_COPY_NOTIFIER") {
-      DOMShortcutCircle.classList.toggle("disabled");
+    if (action === 'TOGGLE_COPY_NOTIFIER') {
+      DOMShortcutCircle.classList.toggle('disabled');
 
       view.showCopyNotifier = !view.showCopyNotifier;
+    }
+
+    if (action === 'EXPORT_COLORS_JSON') {
+      const downloadFilename = 'colors.json';
+
+      const colors = view.currentColors;
+
+      let filename = prompt(
+        'Digite o nome do arquivo desejado.\nA extensão não é obrigatória.',
+        downloadFilename
+      );
+
+      if (typeof filename !== 'string') return;
+
+      // Empty string
+      if (!filename.length) {
+        filename = downloadFilename;
+      }
+
+      download.export({
+        data: JSON.stringify(colors),
+        filename,
+        extension: '.json',
+        clearDownloadURLDalaySeconds: 60,
+        onDownload: ({ url }) => {
+          console.log(url);
+        },
+      });
     }
   });
 }
 
-window.addEventListener("load", () => application());
+window.addEventListener('load', () => application());
