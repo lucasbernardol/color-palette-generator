@@ -1,17 +1,22 @@
 :root {
   --color-background: #0b0b0c;
+
   --color-dark: #121214;
+  --color-dark-secondary: #202024;
+  --color-dark-secondary-hover: #29292e;
 
   --color-primary: #6e3cbc;
-  --color-text: #e1e1e6;
-  --color-white: #ffffff;
-
   --color-primary-hover: #5a2fa0;
 
-  --color-notifier-enabled: rgb(27, 158, 27);
-  --color-notifier-disabled: rgb(196, 30, 30);
+  --color-text: #e1e1e6;
+  --color-text-dark: #767676;
 
-  --color-red-dark: rgb(216, 42, 42);
+  --color-white: #ffffff;
+  --color-line: #252529;
+  --color-red: rgb(216, 42, 42);
+
+  --color-notifier-enabled: rgb(10, 185, 77);
+  --color-notifier-disabled: rgb(196, 30, 30);
 
   // 62.5% - 10px
   font-size: 62.5%;
@@ -20,11 +25,5 @@
 @media (max-width: 1024px) {
   :root {
     font-size: 56.25%; // 9px
-  }
-}
-
-@media (max-width: 980px) {
-  :root {
-    font-size: 50%; // 8px
   }
 }

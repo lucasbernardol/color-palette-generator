@@ -7,10 +7,11 @@
   align-items: center;
 
   .color_generate_button {
-    width: 35rem;
+    width: min(100%, 35rem);
     height: 5.8rem;
 
     display: flex;
+
     justify-content: center;
     align-items: center;
 
@@ -18,7 +19,7 @@
     background-color: var(--color-primary);
 
     border-radius: 0.5rem;
-    border-bottom: 8px solid var(--color-primary-hover);
+    border-bottom: 5px solid var(--color-primary-hover);
 
     transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
@@ -37,7 +38,7 @@
     margin-top: 1rem;
     text-align: center;
 
-    color: #bdbbbb;
-    font-size: 1.4rem;
+    color: var(--color-text-dark);
+    font-size: 1.5rem;
   }
 }

@@ -57,7 +57,7 @@
     background-color: var(--color-primary);
     border-radius: 0.5rem;
 
-    transition: 0.8s cubic-bezier(0.47, 0, 0.745, 0.715);
+    transition: 0.3s cubic-bezier(0.47, 0, 0.745, 0.715);
   }
 
   .header__overlay {
@@ -98,7 +98,7 @@
   }
 
   span:last-child {
-    border-top: 1px solid #202024;
+    border-top: 1px solid var(--color-line);
     padding-top: 1rem;
   }
 

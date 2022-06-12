@@ -1,29 +1,35 @@
 .clipboard_overlay {
-  &.hidden {
-    display: none;
-  }
-
   position: fixed;
 
-  left: 4.2rem;
-  bottom: 4.2rem;
+  left: 3rem;
+  bottom: 8rem;
 
   padding: 1.6rem;
   border-radius: 1rem;
 
   background-color: var(--color-dark);
-  animation: toRightEffect 0.6s ease;
+  animation: ClipboardEffect 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 
-  .clipboard_color {
-    border: 2px solid var(--color-white);
-    border-radius: 0.2rem;
+  .clipboard__message {
+    font-size: 1.4rem;
+    text-align: center;
+  }
 
-    padding: 0.2rem;
-    margin-left: 0.5rem;
+  .clipboard__color {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  &.hidden {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    background-color: rgba(0, 0, 0, 0.6);
   }
 }
 
-@keyframes toRightEffect {
+@keyframes ClipboardEffect {
   from {
     opacity: 0;
     transform: translateX(-50%);
