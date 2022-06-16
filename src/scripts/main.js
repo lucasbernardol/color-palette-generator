@@ -1,33 +1,35 @@
 const DOMColorContainer = document.querySelector('[data-id="color-wrapper"]');
 const DOMCardElements = document.querySelectorAll('.colorize_container');
-
 const DOMGenerate = document.querySelector('[data-id="button-generate"]');
 
-/**
- * Clipboard
- */
 const DOMClipboardModal = document.querySelector('[data-id="clipboard-modal"]');
 
-/**
- * Shortcuts
- */
 const DOMShortcutsModal = document.querySelector('[data-id="shortcuts-modal"]');
-
 const DOMShortcutOpen = document.querySelector('[data-id="shortcut-open"]');
-const DOMShortcutClose = document.querySelector('[data-id="shortcut-close"]');
 
+const DOMShortcutClose = document.querySelector('[data-id="shortcut-close"]');
 const DOMShortcutCircle = document.querySelector('[data-id="shortcut-circle"]');
 
-/**
- * Dawnload
- */
 const DOMDownloadAnchor = document.querySelector('[data-id="download-anchor"]');
 
 const GLOBAL_CLASS_NAMES = {
   clipboardColorText: '.clipboard__color',
 };
 
-const LAST_COLORS = null;
+const MESSAGES = {
+  ptBR: {
+    exportAlert:
+      'Continuar:\nInforme o nome do arquivo no campo abaixo. A extensão não é obrigratória.\n',
+  },
+};
+
+function isFunction(functionRef) {
+  return typeof functionRef === 'function';
+}
+
+function isString(stringRef) {
+  return typeof stringRef === 'string';
+}
 
 /**
  * Utils
@@ -43,39 +45,79 @@ function secondsToMilliseconds(seconds = 0) {
 }
 
 async function sendTextToClipboard(text) {
-  let copied = true;
+  let clipboardCopiedState = true;
 
   try {
-    const isString = text && typeof text === 'string';
+    const isValidString = text && isString(text);
 
-    const isInvalidString = !isString;
-
-    if (isInvalidString) return;
+    if (!isValidString) return;
 
     await navigator.clipboard.writeText(text);
 
-    return copied;
+    return clipboardCopiedState;
   } catch (error) {
-    copied = false;
-
     // Error on copy
     console.error(error);
-
-    return copied;
   } finally {
     console.debug({
-      copy: `Copied to clipboard: ${text}`,
+      copy: `Copied to clipboard: "${text}"`,
+      clipboardCopiedState,
     });
+  }
+}
+
+class Fullscreen {
+  _isFullscreenOpenState = false;
+  documentRootHtmlElement = null;
+
+  get state() {
+    return this._isFullscreenOpenState;
+  }
+
+  /**
+   * @param {Boolean} boo - State value
+   */
+  set state(boo) {
+    this._isFullscreenOpenState = boo;
+  }
+
+  constructor({ rootElement = document.documentElement } = {}) {
+    this.documentRootHtmlElement = rootElement;
+  }
+
+  toggle(onToggleCallback = null) {
+    let isFullscreenOpenState = this.state;
+
+    if (!isFullscreenOpenState) {
+      this.documentRootHtmlElement.requestFullscreen();
+
+      isFullscreenOpenState = !isFullscreenOpenState;
+    } else {
+      document.exitFullscreen();
+
+      isFullscreenOpenState = false;
+    }
+
+    this.state = isFullscreenOpenState;
+
+    // Callback option
+    const isCallbackFunction = isFunction(onToggleCallback);
+
+    if (isCallbackFunction) {
+      onToggleCallback({
+        isFullscreenOpenState,
+      });
+
+      return;
+    }
+
+    return { isFullscreenOpenState };
   }
 }
 
 // class "Color"
 class Color {
   _rgb_string_divider = ',';
-
-  _percentToDecimal(percent) {
-    return Math.floor(percent / 100);
-  }
 
   constructor() {}
 
@@ -143,17 +185,6 @@ class Color {
     const string = this.rgbToString(rgb);
 
     return `rgb(${string})`;
-  }
-
-  rgbToRgba(rgbArray = [], opacityPercent = 100) {
-    const opacity = this._percentToDecimal(opacityPercent);
-
-    // Example: [113, 86, 250, 1.0]
-    return [...rgbArray, opacity];
-  }
-
-  rgbaToCssString(rgba = []) {
-    return this.rgbToCssString(rgba);
   }
 }
 
@@ -313,19 +344,18 @@ class View {
     spanRGBColor: '.colorize__rgb',
   };
 
-  _show_copied_notifier = null;
-
+  _notifier_enabled = null;
   _current_colors = [];
 
   /**
-   * @param {Boolean} boo - "boolean"
+   * @param {Boolean} boolean - Notifier value
    */
-  set showCopyNotifier(boo) {
-    this._show_copied_notifier = boo;
+  set notifierEnabled(boolean) {
+    this._notifier_enabled = boolean;
   }
 
-  get showCopyNotifier() {
-    return this._show_copied_notifier;
+  get notifierEnabled() {
+    return this._notifier_enabled;
   }
 
   get currentColors() {
@@ -342,7 +372,7 @@ class View {
    *  childsElements: HTMLElement[],
    *  colorInstance: Color,
    *  notifierInstance: ModalNotifier,
-   *  showCopyNotifier?: boolean
+   *  notifierEnabled?: boolean
    * }}
    */
   constructor({
@@ -350,18 +380,17 @@ class View {
     childsElements,
     colorInstance = new Color(),
     notifierInstance,
-    showCopyNotifier = true,
+    notifierEnabled = true,
   }) {
-    this.container = container;
-
     // "Array Like" to Array
     const childs = Array.from(childsElements);
 
+    this.container = container;
     this.childsArray = childs;
-
     this.colorInstance = colorInstance;
     this.notifierInstance = notifierInstance;
-    this.showCopyNotifier = showCopyNotifier;
+
+    this.notifierEnabled = notifierEnabled;
 
     this.init();
   }
@@ -369,34 +398,34 @@ class View {
   init() {
     this.reloadDisplayedColors();
 
-    // events
     this.setClipboardEvent();
   }
 
   /** Private method */
   _colors() {
-    const { rgb, rgbCssString } = this.colorInstance.rgb();
+    const { rgb: rgbArray, rgbCssString } = this.colorInstance.rgb();
 
-    const rgbaArray = this.colorInstance.rgbToRgba(rgb);
-
-    const rgba = this.colorInstance.rgbaToCssString(rgbaArray);
-
-    const hex = this.colorInstance.rgbToHexCssString(rgb);
+    const hex = this.colorInstance.rgbToHexCssString(rgbArray);
 
     return {
       hex,
       rgb: rgbCssString,
-      rgba,
     };
   }
 
-  _setStyle(element, styleObject) {
-    return Object.assign(element.style, styleObject);
-  }
+  /**
+   * @param {HTMLElement} element
+   * @param {CSSStyleDeclaration} styles - CSS styles
+   */
+  _setStyle(element, styles) {
+    //return Object.assign(element.style, styleObject);
+    const stylesKeys = Object.keys(styles);
 
-  setColorOnDisplayedElements({ spanHex, spanRgb, hex, rgb }) {
-    spanHex.textContent = hex;
-    spanRgb.textContent = rgb;
+    stylesKeys.forEach((cssKey) => {
+      element.style[cssKey] = styles[cssKey];
+    });
+
+    return element.style;
   }
 
   reloadDisplayedColors() {
@@ -413,14 +442,11 @@ class View {
       const spanHex = cardElement.querySelector(avaliableClass.spanHexColor);
       const spanRgb = cardElement.querySelector(avaliableClass.spanRGBColor);
 
-      this.setColorOnDisplayedElements({
-        spanHex,
-        spanRgb,
-        ...colors,
-      });
+      spanHex.textContent = colors.hex;
+      spanRgb.textContent = colors.rgb;
 
       this._setStyle(headerElement, {
-        backgroundColor: colors.hex,
+        backgroundColor: colors.rgb,
       });
 
       // History
@@ -465,7 +491,7 @@ class View {
     // Clipboard notifier
     const isCopied = await sendTextToClipboard(hexColor);
 
-    const allowShowNotifierComponent = isCopied && this.showCopyNotifier;
+    const allowShowNotifierComponent = isCopied && this.notifierEnabled;
 
     if (allowShowNotifierComponent) {
       this.notifierInstance.open('clipboard').automaticClosing('clipboard', 5);
@@ -510,9 +536,9 @@ class DownloadBlob {
 
     const filenameNormalized = this.fileNameNormalize(filename, extension);
 
-    const url = URL.createObjectURL(binaryBlob);
+    const url = this.createURL(binaryBlob);
 
-    // Add attributes
+    // Attributes
     this.anchorElement.setAttribute('href', url);
     this.anchorElement.setAttribute('download', filenameNormalized);
 
@@ -522,10 +548,12 @@ class DownloadBlob {
     this.remokeURL(url, clearDownloadURLDalaySeconds);
 
     // Callback
-    const isFunction = typeof onDownload === 'function';
+    const isFunctionCallBack = isFunction(onDownload);
 
-    if (isFunction) {
-      onDownload({ url, sizeInBytes: binaryBlob.size });
+    if (isFunctionCallBack) {
+      const { size, type } = binaryBlob;
+
+      return onDownload({ url, blob: { size, type } });
     }
   }
 
@@ -571,12 +599,19 @@ function shortcutActionByKey(keyCode) {
       // Key "E"
       keyBoardShortcutAction = 'EXPORT_COLORS_JSON';
       break;
+
+    case 102:
+      // Key "F"
+      keyBoardShortcutAction = 'TOGGLE_FULLSCREEN';
+      break;
   }
 
   return keyBoardShortcutAction;
 }
 
 function application() {
+  const fullscreen = new Fullscreen();
+
   const download = new DownloadBlob({
     anchorElement: DOMDownloadAnchor,
   });
@@ -603,7 +638,7 @@ function application() {
     container: DOMColorContainer,
     childsElements: DOMCardElements,
     notifierInstance: notifier,
-    showCopyNotifier: true,
+    notifierEnabled: true,
   });
 
   /**
@@ -631,24 +666,27 @@ function application() {
     if (action === 'TOGGLE_COPY_NOTIFIER') {
       DOMShortcutCircle.classList.toggle('disabled');
 
-      view.showCopyNotifier = !view.showCopyNotifier;
+      view.notifierEnabled = !view.notifierEnabled;
     }
 
     if (action === 'EXPORT_COLORS_JSON') {
-      const downloadFilename = 'colors.json';
+      if (fullscreen.state) {
+        fullscreen.state = false;
+      }
+
+      const COLORS_FILE_NAME = 'colors.json';
 
       const colors = view.currentColors;
 
-      let filename = prompt(
-        'Digite o nome do arquivo desejado.\nA extensão não é obrigatória.',
-        downloadFilename
-      );
+      let filename = prompt(MESSAGES.ptBR.exportAlert, COLORS_FILE_NAME);
 
-      if (typeof filename !== 'string') return;
+      const isNotString = !isString(filename);
+
+      if (isNotString) return;
 
       // Empty string
       if (!filename.length) {
-        filename = downloadFilename;
+        filename = COLORS_FILE_NAME;
       }
 
       download.export({
@@ -656,12 +694,29 @@ function application() {
         filename,
         extension: '.json',
         clearDownloadURLDalaySeconds: 60,
-        onDownload: ({ url }) => {
-          console.log(url);
+        onDownload: (data) => {
+          console.log(data);
         },
       });
     }
+
+    if (action === 'TOGGLE_FULLSCREEN') {
+      fullscreen.toggle((state) => {
+        console.log(state);
+      });
+    }
   });
+
+  return {
+    fullscreen,
+    notifier,
+    download,
+    view,
+  };
 }
 
-window.addEventListener('load', () => application());
+window.addEventListener('load', () => {
+  const objects = application();
+
+  console.log(objects);
+});
