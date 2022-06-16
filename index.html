@@ -27,13 +27,13 @@
     <link rel="stylesheet" href="./build/styles/main.css" />
     <script defer src="./src/scripts/main.js"></script>
 
-    <title>ColorFy | Cores aleatórias</title>
+    <title>Crie sua paleta de cores | cores aleatórias</title>
   </head>
   <body>
     <div class="application_wrapper">
       <div class="layout">
         <main class="main_container">
-          <h1 class="title">ColorFy - cores aleatórias</h1>
+          <h1 class="main__title">Crie suas peletas de cores</h1>
 
           <div class="color_wrapper" data-id="color-wrapper">
             <div class="colorize_container">
@@ -178,14 +178,16 @@
       <div class="shortcuts_overlay hidden" data-id="shortcuts-modal">
         <section class="shortcuts">
           <h2 class="shortcuts__title">
-            <img src="./src/assets/images/keyboard-48.svg" alt="Keyboard" />
-
+            <img
+              src="./src/assets/images/keyboard-48.svg"
+              alt="Keyboard icon"
+            />
             <span>Shortcuts disponíveis</span>
           </h2>
 
-          <div class="shorts">
-            <ul class="shorts__list">
-              <li class="shorts_item">
+          <div class="shorthen">
+            <ul class="shorthen__list">
+              <li class="shorthen_item">
                 <span class="shortcut__description">
                   Gerar ou alterar a patela de cores atual
                 </span>
@@ -193,16 +195,16 @@
                 <span class="shortcut__key">r or spacebar</span>
               </li>
 
-              <li class="shorts_item">
+              <li class="shorthen_item">
                 <span class="shortcut__description">
                   Exportar cores em um arquivo/externo JSON
                 </span>
 
                 <span class="shortcut__key">e</span>
-                <mark class="shortcut__download">Download</mark>
+                <mark class="shortcut__badge">Download</mark>
               </li>
 
-              <li class="shorts_item">
+              <li class="shorthen_item">
                 <span class="shortcut__description">
                   Desabilidar notificações ou alertas de copias
                 </span>
@@ -211,6 +213,15 @@
                   n
                   <div class="key__circle" data-id="shortcut-circle"></div>
                 </span>
+              </li>
+
+              <li class="shorthen_item">
+                <span class="shortcut__description">
+                  Ativar ou desativar o modo tela cheia
+                </span>
+
+                <span class="shortcut__key">f</span>
+                <mark class="shortcut__badge">Fullscreen</mark>
               </li>
             </ul>
 
