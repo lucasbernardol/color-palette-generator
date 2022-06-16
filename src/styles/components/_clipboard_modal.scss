@@ -28,15 +28,3 @@
     background-color: rgba(0, 0, 0, 0.6);
   }
 }
-
-@keyframes ClipboardEffect {
-  from {
-    opacity: 0;
-    transform: translateX(-50%);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}

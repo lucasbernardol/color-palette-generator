@@ -2,23 +2,31 @@
   position: fixed;
   z-index: 1;
 
+  right: 3.2rem;
+  bottom: 3.2rem;
+
   width: 5.8rem;
   height: 5.8rem;
 
   padding: 1rem;
 
-  display: none; // Only desktop
+  // Only "Desktop" devices
+  display: none;
   justify-content: center;
   align-items: center;
-
-  right: 3.2rem;
-  bottom: 3.2rem;
 
   background-color: var(--color-dark);
   border-radius: 50%;
 
   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.8);
   transition: 0.6s ease;
+
+  .expand-icon {
+    width: 3.2rem;
+    height: 3.2rem;
+
+    transition: 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
 
   &:hover {
     transform: scale(1.05);
@@ -28,23 +36,16 @@
     }
   }
 
-  .expand-icon {
-    width: 3.2rem;
-    height: 3.2rem;
-
-    transition: 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  }
-
   @media (min-width: 980px) {
-    display: flex; // Desktop devices
+    display: flex;
   }
 }
 
 .shortcuts_overlay {
-  overflow-x: auto;
   position: fixed;
-
   z-index: 99;
+
+  overflow-x: auto;
 
   top: 0;
   left: 0;
@@ -52,18 +53,18 @@
   width: 100%;
   height: 100%;
 
-  background-color: rgba(0, 0, 0, 0.95);
-
   display: flex;
   justify-content: center;
   align-items: center;
 
-  @media (max-width: 600px) {
-    display: block;
-    padding: 2rem;
-  }
+  background-color: rgba(0, 0, 0, 0.95);
 
   &.hidden {
+    display: none;
+  }
+
+  @media (max-width: 980px) {
+    // Only "Desktop" devices.
     display: none;
   }
 }
@@ -79,7 +80,9 @@
   animation: ShortcutsModalDownAnimate 0.8s ease-out;
 
   .shortcuts__title {
-    padding: 1.8rem;
+    width: 100%;
+    padding: 0 1.8rem 0 1.8rem;
+
     display: flex;
 
     justify-content: flex-start;
@@ -98,30 +101,34 @@
   }
 }
 
-.shorts {
-  border-top: 1px solid var(--color-line);
+.shorthen {
+  width: 100%;
   padding: 2rem;
 
-  .shorts__list {
+  display: flex;
+  flex-direction: column;
+
+  // Ul
+  .shorthen__list {
+    width: 100%;
+
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 
     // Li
-    .shorts_item {
+    .shorthen_item {
       position: relative;
 
       width: 100%;
-      margin-bottom: 1.6rem;
+      padding: 1.8rem 0;
+
+      border-top: 1px solid var(--color-line-light);
 
       display: flex;
 
       align-items: center;
       justify-content: space-between;
-
-      &:last-child {
-        margin: 0;
-      }
 
       @media (max-width: 480px) {
         margin-bottom: 3rem;
@@ -130,19 +137,20 @@
         align-items: flex-start;
       }
 
-      .shortcut__download {
+      .shortcut__badge {
         position: absolute;
-        top: -10px;
+        top: -12px;
         left: 0;
 
         font-size: 1.2rem;
-
         font-weight: bold;
+
+        font-family: 'Inter', sans-serif;
         text-transform: uppercase;
 
-        padding: 0.5rem;
+        padding: 0.4rem;
 
-        border-radius: 0.5rem;
+        border-radius: 0.4rem;
         background-color: var(--color-primary);
 
         @media (max-width: 600px) {
@@ -199,6 +207,8 @@
       &:hover {
         background-color: var(--color-dark-secondary-hover);
         border-color: var(--color-primary-hover);
+
+        cursor: auto;
       }
     }
   }
@@ -223,15 +233,5 @@
     &:hover {
       opacity: 0.6;
     }
-  }
-}
-
-@keyframes ShortcutsModalDownAnimate {
-  from {
-    transform: translateY(-100%);
-  }
-
-  to {
-    transform: translateY(0);
   }
 }
